@@ -353,7 +353,7 @@ function getElemRelation(elem1, elem2) {
   return ELEM_RELATION[elem1+elem2] || 'neutral';
 }
 
-function generateFortune(saju, todayGZ, gender) {
+function generateFortune(saju, todayGZ, gender, year, month, day) {
   var dayGan = saju.day[0];
   var dayZhi = saju.day[1];
   var todayGan = todayGZ[0];
@@ -379,9 +379,10 @@ function generateFortune(saju, todayGZ, gender) {
   if (yearRelation === 'good') baseScore += 8;
   else if (yearRelation === 'bad') baseScore -= 5;
 
-  // 랜덤 요소 (날짜 기반 시드)
-  var seed = (today.getDate() * 7 + today.getMonth() * 13) % 17;
-  baseScore += (seed - 8);
+  // 생년월일 + 오늘 날짜 시드
+  var uniqSeed = (year * 31 + month * 17 + day * 7 + today.getFullYear() * 3 + today.getMonth() * 13 + today.getDate() * 11) % 997;
+  var scoreSeed = uniqSeed % 23;
+  baseScore += (scoreSeed - 11);
   baseScore = Math.min(95, Math.max(42, baseScore));
 
   // 운세 텍스트 생성
@@ -463,18 +464,17 @@ function generateFortune(saju, todayGZ, gender) {
       '오늘은 무리하지 않는 것이 최선이에요. 충분한 휴식을 취하고 내일을 위한 에너지를 비축하세요.'
     ],
     neutral: [
-      '오늘 하루 ' + myNature.color + ' 계열의 것을 곁에 두면 기운이 한결 좋아질 수 있어요. 평소보다 조금 더 자신을 칭찬해주는 하루를 보내세요.',
+      '오늘 하루 좋아하는 색깔의 물건을 곁에 두면 기운이 한결 좋아질 수 있어요. 평소보다 조금 더 자신을 칭찬해주는 하루를 보내세요.',
     ],
     same: [
       '오늘은 내가 가장 편안한 공간에서 에너지를 충전하세요. 루틴을 지키는 것만으로도 충분히 잘하고 있는 거예요.'
     ]
   };
 
-  function pickText(obj, key, idx) {
+  function pickText(obj, key, s) {
     var arr = obj[key] || obj['neutral'];
-    return arr[idx % arr.length];
+    return arr[s % arr.length];
   }
-  var idx = today.getDate() % 2;
 
   // 태그 생성
   var tags = [myNature.elem + '기운', todayZhiNature.luck, zhiNature.direction + '방'];
@@ -483,11 +483,11 @@ function generateFortune(saju, todayGZ, gender) {
 
   return {
     score: Math.round(baseScore),
-    general: pickText(generalTexts, relation, idx),
-    relation: pickText(relationTexts, relation, idx),
-    work: pickText(workTexts, relation, idx),
-    money: pickText(moneyTexts, relation, idx),
-    advice: pickText(adviceTexts, relation, idx),
+    general: pickText(generalTexts, relation, uniqSeed),
+    relation: pickText(relationTexts, relation, uniqSeed),
+    work: pickText(workTexts, relation, uniqSeed),
+    money: pickText(moneyTexts, relation, uniqSeed),
+    advice: pickText(adviceTexts, relation, uniqSeed),
     tags: tags
   };
 }
@@ -519,7 +519,7 @@ function getFortune() {
     try {
       var saju = getSaju(year, month, day, hourIdx);
       var todayGZ = getTodayGanZhi();
-      var fortune = generateFortune(saju, todayGZ, gender);
+      var fortune = generateFortune(saju, todayGZ, gender, year, month, day);
 
       // 사주 표시
       function setPillar(ganId, jiId, korId, gz) {
