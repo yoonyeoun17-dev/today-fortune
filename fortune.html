@@ -326,14 +326,32 @@ function generateFortune(saju, todayGZ, year, month, day) {
   var zhiN = ZHI_NATURE[dz] || { luck: '균형' };
   var rel = getElem(myN.elem, toN.elem);
 
-  var base = 60;
-  if (rel === 'good') base += 20;
-  else if (rel === 'bad') base -= 15;
-  else if (rel === 'same') base += 8;
   var seed = (year * 31 + month * 17 + day * 7 + today.getFullYear() * 3 + today.getMonth() * 13 + today.getDate() * 11) % 997;
-  var sc = ((year + month * 3 + day * 7 + today.getDate() * 11 + today.getMonth() * 5) % 23);
-  base += (sc - 11);
-  base = Math.min(95, Math.max(42, Math.round(base)));
+
+  // 오행 관계 기본 점수
+  var base = 62;
+  if (rel === 'good') base += 18;
+  else if (rel === 'bad') base -= 12;
+  else if (rel === 'same') base += 6;
+
+  // 월주 오행과 오늘의 관계 추가 보정
+  var monthGan = saju.month[0];
+  var monthN = GAN_NATURE[monthGan] || { elem: '토' };
+  var monthRel = getElem(monthN.elem, toN.elem);
+  if (monthRel === 'good') base += 5;
+  else if (monthRel === 'bad') base -= 4;
+
+  // 년주 오행과 오늘의 관계 추가 보정
+  var yearGanN = GAN_NATURE[saju.year[0]] || { elem: '토' };
+  var yearRel = getElem(yearGanN.elem, toN.elem);
+  if (yearRel === 'good') base += 3;
+  else if (yearRel === 'bad') base -= 2;
+
+  // 생년월일 + 오늘 날짜 기반 고유 변동 (-12 ~ +12)
+  var variation = ((seed * 7 + today.getDate() * 13 + month * 11) % 25) - 12;
+  base += variation;
+
+  base = Math.min(96, Math.max(40, Math.round(base)));
 
   var T = {
     general: {
