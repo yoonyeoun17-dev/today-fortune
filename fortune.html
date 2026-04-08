@@ -226,7 +226,7 @@ body {
     </div>
 
     <button class="btn-outline" id="reset-btn">오늘의 운세 다시 보기</button>
-    <button class="btn-black" id="yearly-btn">2026년 운세 보기</button>
+    <button class="btn-black" id="yearly-btn"> 운세 보기</button>
     <button class="btn-green" id="homescreen-btn">오늘의 운세 홈 화면 추가하기</button>
 
     <!-- 홈화면 추가 안내 팝업 -->
@@ -263,7 +263,7 @@ body {
   <div id="yearly-screen" class="screen">
     <div class="back-header">
       <button class="back-btn-icon" id="back-btn">‹</button>
-      <div class="back-header-title">2026년 운세</div>
+      <div class="back-header-title" id="yearly-screen-title">운세</div>
     </div>
 
     <div class="fortune-card">
@@ -281,10 +281,10 @@ body {
       <button class="sub-btn" data-card="y-health-card"><span class="sub-btn-title">건강운</span></button>
     </div>
 
-    <div class="sub-fortune-card" id="y-love-card"><div class="sub-fortune-title">2026 연애운</div><div class="fortune-section-text" id="y-love2"></div></div>
-    <div class="sub-fortune-card" id="y-money-card"><div class="sub-fortune-title">2026 금전운</div><div class="fortune-section-text" id="y-money2"></div></div>
-    <div class="sub-fortune-card" id="y-work-card"><div class="sub-fortune-title">2026 직업·학업운</div><div class="fortune-section-text" id="y-work2"></div></div>
-    <div class="sub-fortune-card" id="y-health-card"><div class="sub-fortune-title">2026 건강운</div><div class="fortune-section-text" id="y-health2"></div></div>
+    <div class="sub-fortune-card" id="y-love-card"><div class="sub-fortune-title" id="sub-title-love"></div><div class="fortune-section-text" id="y-love2"></div></div>
+    <div class="sub-fortune-card" id="y-money-card"><div class="sub-fortune-title" id="sub-title-money"></div><div class="fortune-section-text" id="y-money2"></div></div>
+    <div class="sub-fortune-card" id="y-work-card"><div class="sub-fortune-title" id="sub-title-work"></div><div class="fortune-section-text" id="y-work2"></div></div>
+    <div class="sub-fortune-card" id="y-health-card"><div class="sub-fortune-title" id="sub-title-health"></div><div class="fortune-section-text" id="y-health2"></div></div>
 
     <button class="btn-outline" id="back-btn2">← 오늘 운세로 돌아가기</button>
   </div>
@@ -333,6 +333,9 @@ function getElem(e1, e2) { return ELEM_REL[e1+e2] || 'neutral'; }
 // ===================== 날짜 =====================
 var today = new Date();
 var ds = today.getFullYear() + '년 ' + (today.getMonth()+1) + '월 ' + today.getDate() + '일';
+var thisYear = today.getFullYear();
+var nextYear = today.getMonth() >= 10 ? thisYear + 1 : thisYear; // 11월 이후면 다음해 운세
+document.getElementById('yearly-btn').textContent = nextYear + '년 운세 보기';
 document.getElementById('top-date').textContent = ds;
 
 // ===================== 이미지 =====================
@@ -406,6 +409,14 @@ function generateFortune(saju, todayGZ, year, month, day) {
 
   base = Math.min(96, Math.max(40, Math.round(base)));
 
+  // 연도별 간지
+  var yearNames = {2026:'병오',2027:'정미',2028:'무신',2029:'기유',2030:'경술'};
+  var yearElemMap = {2026:'화',2027:'화',2028:'토',2029:'금',2030:'금'};
+  var ganjiName = yearNames[nextYear] || nextYear + '';
+  var yearElemThis = yearElemMap[nextYear] || '토';
+  var rel = getElem(myN.elem, yearElemThis);
+  var seed = (year * 41 + month * 19 + day * 13 + nextYear) % 997;
+
   var T = {
     general: {
       good: ['오늘은 내 기운이 오늘의 에너지와 잘 어우러지는 날이에요. 무엇을 시작해도 자연스럽게 흘러가는 흐름이 느껴질 거예요. 좋은 기운이 하루를 든든하게 받쳐주고 있답니다.', '오늘 하늘의 기운과 좋은 조화를 이루고 있어요. 평소보다 생각이 맑고 판단력이 높아지는 날이에요. 중요한 결정이 있다면 오늘 내리는 것도 좋아요.'],
@@ -460,20 +471,25 @@ function generateFortune(saju, todayGZ, year, month, day) {
 function generateYearly(saju, year, month, day) {
   var dg = saju.day[0];
   var myN = GAN_NATURE[dg] || { elem: '토' };
-  var rel = getElem(myN.elem, '화');
-  var seed = (year * 41 + month * 19 + day * 13 + 2026) % 997;
+  // 연도별 간지
+  var yearNames = {2026:'병오',2027:'정미',2028:'무신',2029:'기유',2030:'경술'};
+  var yearElemMap = {2026:'화',2027:'화',2028:'토',2029:'금',2030:'금'};
+  var ganjiName = yearNames[nextYear] || '';
+  var yearElemThis = yearElemMap[nextYear] || '토';
+  var rel = getElem(myN.elem, yearElemThis);
+  var seed = (year * 41 + month * 19 + day * 13 + nextYear) % 997;
+  var yrStr = nextYear + '년 ' + ganjiName + '년';
 
   function pick(obj) {
     var arr = obj[rel] || obj['neutral'];
     return arr[seed % arr.length];
   }
-
-  var T = {
+    var T = {
     general: {
-      good: ['2026년 병오년은 당신에게 활기차고 역동적인 한 해가 될 거예요. 병오년의 뜨거운 화(火) 기운이 당신의 사주 기운과 잘 어우러져 시너지를 만들어내요. 오랫동안 마음속에 품어온 목표를 향해 구체적인 행동을 시작하기에 최적의 타이밍이에요. 주변 사람들과의 협력도 활발해지고, 예상치 못한 좋은 기회가 찾아올 가능성이 높아요. 상반기에 씨앗을 심으면 하반기에 풍성한 결실을 맺을 수 있는 한 해랍니다.'],
-      bad: ['2026년 병오년은 강한 화(火) 기운이 넘치는 해예요. 당신의 사주 기운과 다소 엇갈리는 면이 있어 무리하게 밀어붙이기보다 내실을 다지는 전략이 효과적이에요. 겉으로 드러나는 성과보다 보이지 않는 곳에서 꾸준히 준비하고 쌓아가는 시간으로 활용하면 좋아요. 인내심을 갖고 기다리면 내년에 훨씬 큰 도약이 기다리고 있어요.'],
-      neutral: ['2026년 병오년은 크게 치우치지 않고 균형을 유지하며 성장해가는 한 해예요. 특별한 기복 없이 꾸준한 노력이 쌓여 연말에는 지금보다 훨씬 단단해진 자신을 발견할 수 있어요. 작은 변화들이 모여 큰 변화를 만드는 한 해이니, 매일의 루틴을 소중히 여기세요.'],
-      same: ['2026년 병오년의 뜨거운 화(火) 기운이 당신의 사주 에너지와 비슷한 결로 흘러 안정적이면서도 활기찬 한 해가 될 거예요. 에너지 낭비 없이 원하는 방향으로 집중할 수 있는 좋은 조건이에요.']
+      good: [yrStr+'은 당신에게 활기차고 역동적인 한 해가 될 거예요. 올해의 강한 화(火) 기운이 당신의 사주 기운과 잘 어우러져 시너지를 만들어내요. 오랫동안 마음속에 품어온 목표를 향해 구체적인 행동을 시작하기에 최적의 타이밍이에요. 주변 사람들과의 협력도 활발해지고, 예상치 못한 좋은 기회가 찾아올 가능성이 높아요. 상반기에 씨앗을 심으면 하반기에 풍성한 결실을 맺을 수 있는 한 해랍니다.'],
+      bad: [yrStr+'은 강한 화(火) 기운이 넘치는 해예요. 당신의 사주 기운과 다소 엇갈리는 면이 있어 무리하게 밀어붙이기보다 내실을 다지는 전략이 효과적이에요. 겉으로 드러나는 성과보다 보이지 않는 곳에서 꾸준히 준비하고 쌓아가는 시간으로 활용하면 좋아요. 인내심을 갖고 기다리면 내년에 훨씬 큰 도약이 기다리고 있어요.'],
+      neutral: [yrStr+'은 크게 치우치지 않고 균형을 유지하며 성장해가는 한 해예요. 특별한 기복 없이 꾸준한 노력이 쌓여 연말에는 지금보다 훨씬 단단해진 자신을 발견할 수 있어요. 작은 변화들이 모여 큰 변화를 만드는 한 해이니, 매일의 루틴을 소중히 여기세요.'],
+      same: [yrStr+'의 뜨거운 화(火) 기운이 당신의 사주 에너지와 비슷한 결로 흘러 안정적이면서도 활기찬 한 해가 될 거예요. 에너지 낭비 없이 원하는 방향으로 집중할 수 있는 좋은 조건이에요.']
     },
     first: {
       good: ['상반기는 새로운 시작의 에너지가 넘치는 시기예요. 1~2월에는 올 한 해의 방향을 설정하는 중요한 결정을 내리기에 좋아요. 3~4월에는 인간관계에서 귀한 인연이 이어질 수 있고, 5~6월에는 그동안의 노력이 가시적인 성과로 나타나기 시작해요.'],
@@ -599,6 +615,11 @@ document.getElementById('yearly-btn').addEventListener('click', function() {
     var el = document.getElementById('y-'+k+'2');
     if (el) el.textContent = document.getElementById('y-'+k).textContent;
   });
+  document.getElementById('yearly-screen-title').textContent = nextYear + '년 운세';
+  document.getElementById('sub-title-love').textContent = nextYear + ' 연애운';
+  document.getElementById('sub-title-money').textContent = nextYear + ' 금전운';
+  document.getElementById('sub-title-work').textContent = nextYear + ' 직업·학업운';
+  document.getElementById('sub-title-health').textContent = nextYear + ' 건강운';
   // 서브카드 모두 닫기
   ['y-love-card','y-money-card','y-work-card','y-health-card'].forEach(function(id) {
     document.getElementById(id).style.display = 'none';
